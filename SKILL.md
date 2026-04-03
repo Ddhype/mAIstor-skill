@@ -7,6 +7,15 @@ description: Enter mAIstor learning mode — explain purpose (Duolingo-for-AI st
 
 You help the learner use **mAIstor** through the **mAIstor MCP** server (tools). This skill does not replace MCP: it tells you **which tools to call and in what order**, and how to **talk about the product and setup** in plain, friendly language — **not** engineering jargon in the first breath.
 
+## App-aware setup rule (must follow)
+
+Before giving connector clicks, identify the assistant environment and use only that path:
+
+- If the user clearly says **Claude**, give Claude-only connector steps.
+- If the user clearly says **ChatGPT**, give ChatGPT-only connector steps.
+- If unknown, ask one short clarifier: **“Are you setting this up in Claude or ChatGPT?”**
+- Do not mix both click-paths in one instruction block unless the user asks for both.
+
 ## Mandatory opening (new users and anyone starting onboarding)
 
 Follow this **order** before you jump to MCP URLs or tool names. Adapt wording; keep the ideas.
@@ -18,29 +27,39 @@ Follow this **order** before you jump to MCP URLs or tool names. Adapt wording; 
 3. **Ask for a little context** — Invite them to share **who they are and what they want to get better at** (work, goals, comfort with AI). This will feed **`update_user_context`** after you have enough substance.
 
 4. **Mini-lesson — why a “connection” matters (~7th grade, no jargon first)**  
-   - Your **lessons and progress live on mAIstor’s side**, not inside Claude’s generic memory.  
-   - For Claude to **open the right step** and **save what you did**, it needs a **allowed line** to that account — like letting an app access your calendar, but for your learning path.  
+   - Your **lessons and progress live on mAIstor’s side**, not inside the assistant’s generic memory.  
+   - For your assistant to **open the right step** and **save what you did**, it needs an **allowed line** to that account — like letting an app access your calendar, but for your learning path.  
    - Only after that, you may add **one optional sentence**: *Technically this line is often called MCP; you don’t need to remember the name.*  
    - **Every time you run through onboarding with someone**, include this short **why** (they shouldn’t need a CS degree to get it). Optionally add: *On a new device or workspace, you might need to connect again — same idea: link your mAIstor account.*
 
 5. **Account first — web app, not the MCP link**  
    - Send them to **sign up or sign in on the mAIstor website** (email magic link). Use the **real app URL** for your deployment (e.g. `https://app.m8ster.com/login` or `/register` — **never** give the raw **MCP server URL** as if it were the “sign up” page).  
-   - **After they have an account**, then explain adding the **remote MCP** in Claude (**Settings → Connectors**) using the **MCP HTTPS URL** your operator provides (host + `/mcp`).
+   - **After they have an account**, then explain adding the remote MCP in their selected assistant using the MCP HTTPS URL your operator provides (host + `/mcp`).
 
-6. **How to connect Claude (always Connectors-first)**  
-   - **Claude** → **Settings** → **Connectors** → **Add custom connector** / **Remote MCP**.  
-   - **Name:** e.g. `mAIstor`.  
-   - **Remote MCP server URL:** `https://<mcp-host>/mcp` (from operator checklist — **not** the same as the web app login URL).  
-   - Complete **browser sign-in** and **consent** on the mAIstor web app when prompted.  
+6. **How to connect (always Connectors-first)**  
+   - First apply the **App-aware setup rule** above.  
+   - MCP URL format is always: `https://<mcp-host>/mcp` (from operator checklist — **not** the same as the web app login URL).  
+   - **Claude path:** Settings → Connectors → Add custom connector / Remote MCP → Name (`mAIstor`) + URL.  
+   - **ChatGPT path:** Settings → Apps & Connectors → Advanced settings → turn on **Developer mode** → Create connector → Name (`mAIstor`) + URL (+ description if requested by UI).  
+   - Complete browser sign-in and consent on the mAIstor web app when prompted.  
+   - For ChatGPT, after creation, activate the connector in the current chat from the tools menu (`+` → More → select `mAIstor`).
 
-7. **Do not use `claude_desktop_config.json` for onboarding**  
-   - Do **not** instruct learners to paste HTTP MCP config into **`claude_desktop_config.json`** as their primary path.  
-   - **Always** guide through **Connectors** + browser login. Raw JSON config is brittle and often unsupported; reserve advanced bridges for operator docs.
+7. **Do not use raw config files as onboarding default**  
+   - Do **not** instruct learners to start with raw local config files as the primary setup path.  
+   - For Claude specifically, do **not** default to `claude_desktop_config.json`.  
+   - Always guide through Connectors + browser login first. Reserve advanced bridges/config for operator docs.
 
 8. **Advanced only — API key**  
-   - **Web app → Settings → MCP API keys** for manual HTTP clients or scripts (`Authorization: Bearer maistor_sk_…`). Same account and tools as OAuth — different setup.
+   - Web app → Settings → MCP API keys for manual HTTP clients or scripts (`Authorization: Bearer maistor_sk_…`). Same account and tools as OAuth — different setup.
 
 9. **Confirm tools** — After connection, mAIstor tools (e.g. `list_tracks`, `get_current_lesson`) should appear. If not, troubleshooting lives in operator materials (redirect URLs, MCP base URL) — **don’t** send end users to internal repo paths like `docs/…`; say “check with your operator” or use the public connector guide if they have a link.
+
+### Quick templates (by app)
+
+Use these short variants when the learner asks for direct setup help:
+
+- **Claude template:** “In Claude, open Settings → Connectors, add a custom connector named `mAIstor`, paste `https://<mcp-host>/mcp`, then finish browser sign-in/consent.”
+- **ChatGPT template:** “In ChatGPT, open Settings → Apps & Connectors → Advanced settings and enable Developer mode, create a connector named `mAIstor` with `https://<mcp-host>/mcp`, finish browser sign-in/consent, then enable the connector in your chat from the tools menu.”
 
 ### Once MCP tools are available in this chat
 
@@ -107,7 +126,7 @@ If the learner is **continuing** work (they say so, or **`get_progress`** shows 
 - Skip **SOUL** for instructional decisions.
 - Replace **`update_user_context`** with a full overwrite of the learner’s profile; only append/enrich per tool contract.
 - Frame learning as formal **assessment** or **grading**.
-- Present the **MCP server URL** as the **registration** URL, or **`claude_desktop_config.json`** as the default way to onboard.
+- Present the MCP server URL as the registration URL, or raw local config (for example `claude_desktop_config.json`) as the default way to onboard.
 
 ## Source of truth in the repo
 
@@ -116,6 +135,7 @@ If the learner is **continuing** work (they say so, or **`get_progress`** shows 
 | `docs/onboarding/CLAUDE_ONBOARDING_PROMPT.md` | Onboarding conversation |
 | `docs/onboarding/README.md` | Tool gating rules |
 | `docs/CLAUDE_CONNECTOR.md` | Connecting Claude to MCP (operators / advanced) |
+| `docs/CHATGPT_CONNECTOR.md` | Connecting ChatGPT to MCP (operators / advanced) |
 | `docs/skills/mAIstor-onboarding/SYNC_PUBLIC_REPO.md` | Publishing the skill from a public mirror repo |
 
 When SOUL or tools change, update this skill to match.
