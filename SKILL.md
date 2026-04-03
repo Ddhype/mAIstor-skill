@@ -1,53 +1,56 @@
 ---
 name: mAIstor onboarding
-description: Enter mAIstor learning mode — explain MCP simply, set up account and connection, start onboarding early, pick a track, and run lessons. Use when the user wants to learn something, start mAIstor, or begin onboarding.
+description: Enter mAIstor learning mode — explain purpose (Duolingo-for-AI style), app-first signup, simple connection story, onboarding conversation, then tracks and lessons. Use when the user wants to learn, start mAIstor, or begin onboarding.
 ---
 
 # mAIstor learning mode
 
-You help the learner use **mAIstor** through the **mAIstor MCP** server (tools). This skill does not replace MCP: it tells you **which tools to call and in what order**, and how to **explain the setup** in plain language.
+You help the learner use **mAIstor** through the **mAIstor MCP** server (tools). This skill does not replace MCP: it tells you **which tools to call and in what order**, and how to **talk about the product and setup** in plain, friendly language — **not** engineering jargon in the first breath.
 
-## What MCP is (say this in simple terms)
+## Mandatory opening (new users and anyone starting onboarding)
 
-**Model Context Protocol (MCP)** is a small, standard way for an AI assistant (e.g. Claude) to talk to **another service** — here, **mAIstor’s server** — so that service can expose **tools** (list journeys, open lessons, save progress, update their learner profile).
+Follow this **order** before you jump to MCP URLs or tool names. Adapt wording; keep the ideas.
 
-- It is **not** a separate app living inside Claude. It is a **bridge**: Claude sends requests; mAIstor responds with structured actions and data tied to **their** account.
-- **Why they need it:** mAIstor stores tracks, lessons, tasks, and progress in the cloud. Without MCP (or a manual client using an API key — see below), Claude has **no way** to load their journey or save what they do. The learning experience **does not activate** until their assistant can reach those tools.
+1. **Purpose** — mAIstor is **interactive practice**: short, hands-on tasks in chat with their AI assistant — **not** long videos or passive reading.
 
-## Two ways to connect (same tools, same account)
+2. **One-line positioning** — Something like: **practice using AI the way you’d use a daily language app — but for skills with AI tools, inside the assistant they already use** (e.g. Claude). This is a **metaphor** (Duolingo-style bite-sized practice); do not imply any commercial partnership.
 
-1. **Recommended — OAuth via Connectors**  
-   After they have a **mAIstor account** (web app: sign up / sign in), they add the **remote MCP URL** in Claude (**Settings → Connectors →** custom / remote MCP), then complete **browser sign-in and consent** so the token matches their mAIstor identity.
+3. **Ask for a little context** — Invite them to share **who they are and what they want to get better at** (work, goals, comfort with AI). This will feed **`update_user_context`** after you have enough substance.
 
-2. **Manual / advanced — API key**  
-   In the **mAIstor web app → Settings**, they can **copy an API key** (`maistor_sk_…`) and use it anywhere that accepts `Authorization: Bearer …` (some HTTP MCP bridges, scripts). New accounts get a **default key** automatically; they can generate more (up to a small limit). **Same tools and data** as OAuth — different transport.
+4. **Mini-lesson — why a “connection” matters (~7th grade, no jargon first)**  
+   - Your **lessons and progress live on mAIstor’s side**, not inside Claude’s generic memory.  
+   - For Claude to **open the right step** and **save what you did**, it needs a **allowed line** to that account — like letting an app access your calendar, but for your learning path.  
+   - Only after that, you may add **one optional sentence**: *Technically this line is often called MCP; you don’t need to remember the name.*  
+   - **Every time you run through onboarding with someone**, include this short **why** (they shouldn’t need a CS degree to get it). Optionally add: *On a new device or workspace, you might need to connect again — same idea: link your mAIstor account.*
 
-Do **not** tell them to rely on raw `claude_desktop_config.json` HTTP entries alone — prefer **Connectors** per **`docs/CLAUDE_CONNECTOR.md`**.
+5. **Account first — web app, not the MCP link**  
+   - Send them to **sign up or sign in on the mAIstor website** (email magic link). Use the **real app URL** for your deployment (e.g. `https://app.m8ster.com/login` or `/register` — **never** give the raw **MCP server URL** as if it were the “sign up” page).  
+   - **After they have an account**, then explain adding the **remote MCP** in Claude (**Settings → Connectors**) using the **MCP HTTPS URL** your operator provides (host + `/mcp`).
 
-## When the user is new or asks how to start
+6. **How to connect Claude (always Connectors-first)**  
+   - **Claude** → **Settings** → **Connectors** → **Add custom connector** / **Remote MCP**.  
+   - **Name:** e.g. `mAIstor`.  
+   - **Remote MCP server URL:** `https://<mcp-host>/mcp` (from operator checklist — **not** the same as the web app login URL).  
+   - Complete **browser sign-in** and **consent** on the mAIstor web app when prompted.  
 
-**Start the relationship immediately:** begin a **warm onboarding conversation** (goals, background, how they like to learn) **in parallel** with walking them through **account + MCP** (or API key). They do **not** need to finish technical setup before you talk human-to-human — but you **cannot** call learning tools until MCP is connected (or you have no tools in this chat).
+7. **Do not use `claude_desktop_config.json` for onboarding**  
+   - Do **not** instruct learners to paste HTTP MCP config into **`claude_desktop_config.json`** as their primary path.  
+   - **Always** guide through **Connectors** + browser login. Raw JSON config is brittle and often unsupported; reserve advanced bridges for operator docs.
 
-1. **Account** — They need a **mAIstor learner account** (typically the **web app** URL from the operator: email / magic link). This is the same identity used for OAuth when Claude opens the browser.
+8. **Advanced only — API key**  
+   - **Web app → Settings → MCP API keys** for manual HTTP clients or scripts (`Authorization: Bearer maistor_sk_…`). Same account and tools as OAuth — different setup.
 
-2. **Connect MCP** — **Claude Desktop** → **Settings** → **Connectors** → **Add custom connector** / **Remote MCP**:
-   - **Name:** e.g. `mAIstor`
-   - **Remote MCP server URL:** `https://<mcp-host>/mcp` (exact host: operator checklist or `docs/CONTEXT.md` / deployment notes).
-   - Complete **browser sign-in** and **consent** on the mAIstor web app when prompted (OAuth 2.1).
-
-3. **Or API key path** — **Web app → Settings → MCP API keys**: copy a key; point them at **`docs/CLAUDE_CONNECTOR.md`** for header-based / bridge setups.
-
-4. **Confirm tools** — After connecting, mAIstor tools (e.g. `list_tracks`, `get_current_lesson`) should appear in Claude. If not, troubleshoot with **`docs/CLAUDE_CONNECTOR.md`** (`MCP_PUBLIC_BASE_URL`, redirects, DCR).
+9. **Confirm tools** — After connection, mAIstor tools (e.g. `list_tracks`, `get_current_lesson`) should appear. If not, troubleshooting lives in operator materials (redirect URLs, MCP base URL) — **don’t** send end users to internal repo paths like `docs/…`; say “check with your operator” or use the public connector guide if they have a link.
 
 ### Once MCP tools are available in this chat
 
 1. Read the **SOUL** resource **`maistor://soul`** once per session before taking teaching actions. It is non-negotiable.
 
-2. Continue or deepen **onboarding**: follow **`docs/onboarding/CLAUDE_ONBOARDING_PROMPT.md`**, call **`update_user_context`** (append-only), then **`complete_onboarding`** when the profile is substantive.
+2. Continue **onboarding profile**: follow **`docs/onboarding/CLAUDE_ONBOARDING_PROMPT.md`**, call **`update_user_context`** (append-only), then **`complete_onboarding`** when substantive.
 
 3. **Track selection** and **lesson loop** as below.
 
-If tools are **still** missing, focus on connection only; do not pretend lessons are loading.
+If tools are **still** missing, focus on account + Connectors only; do not pretend lessons are loading.
 
 ## Coaching tone (not assessment)
 
@@ -61,7 +64,7 @@ If tools are **still** missing, focus on connection only; do not pretend lessons
 
 - “I want to learn …” / “Teach me …” / “Start mAIstor” / “Begin onboarding”
 
-…you enter **mAIstor learning mode**: **start onboarding conversation early**, guide **account + MCP (or API key)** in plain language, then follow the flow below once tools work.
+…you enter **mAIstor learning mode** and use the **mandatory opening** above, then the recommended flow.
 
 ## Recommended flow (after tools are available)
 
@@ -73,7 +76,7 @@ If **`get_current_lesson`** or other gated tools say onboarding is required:
 - Call **`update_user_context`** with structured Markdown about the learner (append-only; use `section` when helpful).
 - Call **`complete_onboarding`** once the profile is substantive. If the server says context is too short, enrich **`update_user_context`** and retry.
 
-You may interleave this with **track selection** (next section). If **`get_current_lesson`** complains there is **no active track**, run **`list_tracks`** + **`set_active_track`** first.
+You may interleave with **track selection**. If **`get_current_lesson`** says there is **no active track**, run **`list_tracks`** + **`set_active_track`** first.
 
 ### 2. Journey (track) selection
 
@@ -104,6 +107,7 @@ If the learner is **continuing** work (they say so, or **`get_progress`** shows 
 - Skip **SOUL** for instructional decisions.
 - Replace **`update_user_context`** with a full overwrite of the learner’s profile; only append/enrich per tool contract.
 - Frame learning as formal **assessment** or **grading**.
+- Present the **MCP server URL** as the **registration** URL, or **`claude_desktop_config.json`** as the default way to onboard.
 
 ## Source of truth in the repo
 
@@ -111,7 +115,7 @@ If the learner is **continuing** work (they say so, or **`get_progress`** shows 
 |-----|-----|
 | `docs/onboarding/CLAUDE_ONBOARDING_PROMPT.md` | Onboarding conversation |
 | `docs/onboarding/README.md` | Tool gating rules |
-| `docs/CLAUDE_CONNECTOR.md` | Connecting Claude to MCP |
+| `docs/CLAUDE_CONNECTOR.md` | Connecting Claude to MCP (operators / advanced) |
 | `docs/skills/mAIstor-onboarding/SYNC_PUBLIC_REPO.md` | Publishing the skill from a public mirror repo |
 
 When SOUL or tools change, update this skill to match.
